@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 @RestController
 public class CategoryController {
-
+    
     private CategoryService categoryService;
 
     // Constructor Injection
@@ -26,7 +26,7 @@ public class CategoryController {
             @RequestParam(name="pageNumber", defaultValue = AppConstants.PAGE_NUMBER,required = false) Integer pageNumber,
             @RequestParam(name="pageSize", defaultValue = AppConstants.PAGE_SIZE,required = false) Integer pageSize,
             @RequestParam(name="sortBy", defaultValue = AppConstants.SORT_CATEGORIES_BY) String sortBy,
-            @RequestParam(name="sortOrder", defaultValue = AppConstants.SORT_CATEGORIES_ODER) String sortOrder
+            @RequestParam(name="sortOrder", defaultValue = AppConstants.SORT_CATEGORIES_ORDER) String sortOrder
     ){
         CategoryResponse categoryResponse=categoryService.getAllCategories(pageNumber,pageSize,sortBy,sortOrder);
         return new ResponseEntity<>(categoryResponse,HttpStatus.OK);
