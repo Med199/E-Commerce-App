@@ -51,6 +51,13 @@ public class JwtUtils {
         return cookie;
     }
 
+    // Generate Clean Cookie for Sign out
+    public ResponseCookie generateCleanCookie(){
+        ResponseCookie cookie = ResponseCookie.from(jwtCookie,null)
+                .path("/api") // Cookie sent just for URL's starting with /api
+                .build();
+        return cookie;
+    }
 
     public String generateTokenFromUsername(String username) {
         return Jwts.builder()

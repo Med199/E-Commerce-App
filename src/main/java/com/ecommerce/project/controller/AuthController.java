@@ -123,6 +123,13 @@ public class AuthController {
         return new ResponseEntity<>(new APIResponse("User registered successfully",true),HttpStatus.OK);
     }
 
+    @PostMapping("/signout")
+    public ResponseEntity<APIResponse> signoutUser(){
+        ResponseCookie cleanCookie = jwtUtils.generateCleanCookie();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,cleanCookie.toString())
+                .body(new APIResponse("You've been signed out",true));
+    }
+
     @GetMapping("/username")
     public String currentUserName(Authentication authentication) {
         if (authentication!=null)
@@ -140,4 +147,5 @@ public class AuthController {
         UserInfoResponse response = new UserInfoResponse(userDetails.getId(), userDetails.getUsername(), roles);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
 }
