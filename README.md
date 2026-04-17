@@ -56,8 +56,6 @@ This backend API provides core functionality for an e-commerce system including 
 
 ## 📁 Project Structure
 
-## 📁 Project Structure
-
 ```text
 src/
 ├── config/
