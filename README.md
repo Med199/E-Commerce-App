@@ -34,7 +34,7 @@ This backend API provides core functionality for an e-commerce system including 
 - Get all products
 - Get product by Category/keywords
 
-### 🗂️ Category Module (if implemented)
+### 🗂️ Category Module 
 - Create category
 - Update category
 - Delete category
@@ -56,6 +56,9 @@ This backend API provides core functionality for an e-commerce system including 
 
 ## 📁 Project Structure
 
+## 📁 Project Structure
+
+```text
 src/
 ├── config/
 ├── controller/
@@ -70,6 +73,7 @@ src/
 │   ├── response/
 │   ├── services/
 ├── service/
+```
 
 ---
 
