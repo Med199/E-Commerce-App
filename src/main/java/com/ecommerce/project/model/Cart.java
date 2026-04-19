@@ -19,7 +19,6 @@ public class Cart {
     @Column(name = "cart_id")
     private Long cartId;
 
-    @NotBlank
     @Column(name = "total_price")
     private Double totalPrice = 0.0;
 
