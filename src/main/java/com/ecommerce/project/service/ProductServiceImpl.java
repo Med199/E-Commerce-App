@@ -2,10 +2,14 @@ package com.ecommerce.project.service;
 
 import com.ecommerce.project.exceptions.APIException;
 import com.ecommerce.project.exceptions.ResourceNotFoundException;
+import com.ecommerce.project.model.Cart;
+import com.ecommerce.project.model.CartItem;
 import com.ecommerce.project.model.Category;
 import com.ecommerce.project.model.Product;
+import com.ecommerce.project.payload.CartDTO;
 import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.payload.ProductResponse;
+import com.ecommerce.project.repositories.CartRepository;
 import com.ecommerce.project.repositories.CategoryRepository;
 import com.ecommerce.project.repositories.ProductRepository;
 import org.modelmapper.ModelMapper;
@@ -20,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -28,6 +33,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
+    private CartService cartService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -177,19 +188,60 @@ public class ProductServiceImpl implements ProductService {
         productFromDb.setQuantity(product.getQuantity());
         productFromDb.setDiscount(product.getDiscount());
         productFromDb.setPrice(product.getPrice());
+        double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
+        product.setSpecialPrice(specialPrice);
         productFromDb.setSpecialPrice(product.getSpecialPrice());
 
         //Save to database
         Product savedProduct= productRepository.save(productFromDb);
+
+        // update the product in the all the existing carts too
+        List<Cart> carts = cartRepository.findCartsByProductId(productId);
+        carts.forEach(cart -> cartService.updateProductInCarts(cart.getCartId(),savedProduct));
         return modelMapper.map(savedProduct,ProductDTO.class);
     }
 
     @Override
     public ProductDTO deleteProduct(Long productId) {
-        Product productFromDb= productRepository.findById(productId)
-                .orElseThrow(()->new ResourceNotFoundException("Product","ProductId",productId));
+//        Product productFromDb= productRepository.findById(productId)
+//                .orElseThrow(()->new ResourceNotFoundException("Product","ProductId",productId));
+//
+//        // delete the product from the cart before deleting from database
+//        List<Cart> carts = cartRepository.findCartsByProductId(productId);
+//        carts.forEach(cart -> cartService.deleteProductFromCart(cart.getCartId(),productId));
+//
+//        productRepository.deleteById(productId);
+//        return modelMapper.map(productFromDb, ProductDTO.class);
+
+        // Load product (must exist)
+        Product productFromDb = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product", "ProductId", productId));
+
+        // Find all carts that contain this product
+        List<Cart> carts = cartRepository.findCartsByProductId(productId);
+
+        // Remove product from each cart + recalculate total
+        for (Cart cart : carts) {
+            cart.getCartItems().removeIf(item ->
+                    item.getProduct().getProductId().equals(productId)
+            );
+            double total = 0.0;
+            for (CartItem item : cart.getCartItems()) {
+                total += item.getProductPrice() * item.getQuantity();
+            }
+            cart.setTotalPrice(total);
+        }
+
+        // Save updated carts
+        cartRepository.saveAll(carts);
+
+        // Delete product
         productRepository.deleteById(productId);
+
+        // Return DTO
         return modelMapper.map(productFromDb, ProductDTO.class);
+
     }
 
     @Override
