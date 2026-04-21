@@ -41,11 +41,27 @@ public class CartController {
     // Get User's Cart
     @GetMapping("carts/user/cart")
     public ResponseEntity<CartDTO> getUsersCart(){
-        String email = authUtil.loggedInEmail();
+        /*String email = authUtil.loggedInEmail();
         Cart cart = cartRepository.findCartByEmail(email);
-        Long cartId = cart.getCartId();
-        CartDTO cartDTO = cartService.getUsersCart(cartId); // We pass cartId for scalability purpose, later user can have multiple carts
+        Long cartId = cart.getCartId();*/
+        CartDTO cartDTO = cartService.getUsersCart();
         return new ResponseEntity<CartDTO>(cartDTO,HttpStatus.OK);
     }
+
+    @PutMapping("/cart/products/{productId}/quantity/{operation}")
+    public ResponseEntity<CartDTO> updateProductQuantityInCart(@PathVariable Long productId,
+                                                     @PathVariable String operation){
+        CartDTO cartDTO = cartService.updateProductQuantityInCart(productId,
+                operation.equalsIgnoreCase("delete")? -1 : 1);
+        return new ResponseEntity<>(cartDTO,HttpStatus.OK);
+    }
+
+    @DeleteMapping("/carts/{cartId}/product/{productId}")
+    public ResponseEntity<String> deleteProductFromCart (@PathVariable Long cartId,
+                                                         @PathVariable Long productId){
+        String status = cartService.deleteProductFromCart(cartId,productId);
+        return new ResponseEntity<>(status,HttpStatus.OK);
+    }
+
 
 }
